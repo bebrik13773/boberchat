@@ -135,14 +135,10 @@
         <label class="field-label">Пароль</label>
         <input type="password" class="input" id="registerPassword" placeholder="••••••••" required>
       </div>
-      <div class="auth-field">
-        <label class="field-label">Инвайт-код</label>
-        <input type="text" class="input" id="registerInvite" placeholder="Код приглашения" required>
-      </div>
       <button type="submit" class="btn btn-primary auth-submit">Создать аккаунт</button>
     </form>
 
-    <p class="auth-hint">Доступ только по приглашению</p>
+    <p class="auth-hint">БоберЧат — закрытая площадка для своих</p>
 
   </div>
 </div>
@@ -224,7 +220,6 @@
           username: document.getElementById('registerUsername').value.trim(),
           email: document.getElementById('registerEmail').value.trim(),
           password: document.getElementById('registerPassword').value,
-          invite_code: document.getElementById('registerInvite').value.trim(),
         }),
       });
       const data = await res.json();

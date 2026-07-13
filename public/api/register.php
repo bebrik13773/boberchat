@@ -1,7 +1,7 @@
 <?php
 /**
  * POST /api/register.php
- * Тело запроса (JSON): { username, email, password, invite_code, display_name }
+ * Тело запроса (JSON): { username, email, password, display_name }
  *
  * Создаёт пользователя. Имя, username, аватар, био — все со статусом
  * "pending" до модерации (кроме случаев, когда значение уже было одобрено
@@ -11,9 +11,6 @@
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/db.php';
-
-// Пока задаём инвайт-код прямо здесь. Позже можно вынести в отдельный секрет/конфиг.
-const INVITE_CODE = 'bober2026';
 
 function respond(int $code, array $data): void {
     http_response_code($code);
@@ -33,14 +30,9 @@ if (!is_array($input)) {
 $username = trim($input['username'] ?? '');
 $email = trim($input['email'] ?? '');
 $password = (string)($input['password'] ?? '');
-$inviteCode = trim($input['invite_code'] ?? '');
 $displayName = trim($input['display_name'] ?? '');
 
 // --- Валидация ---
-
-if ($inviteCode !== INVITE_CODE) {
-    respond(403, ['error' => 'Неверный инвайт-код']);
-}
 
 if (!preg_match('/^[a-zA-Z0-9_]{3,32}$/', $username)) {
     respond(400, ['error' => 'Username должен быть 3-32 символа: латиница, цифры, подчёркивание']);
