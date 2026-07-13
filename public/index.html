@@ -2,26 +2,52 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>БоберЧат — тест деплоя</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>БоберЧат</title>
+<link rel="stylesheet" href="assets/style.css">
 <style>
-  body {
-    background: #14101f;
-    color: #e5deff;
-    font-family: system-ui, sans-serif;
+  .home-screen {
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh;
-    margin: 0;
+    padding: 24px;
     text-align: center;
   }
-  h1 { color: #a875ff; }
+  .home-screen .emoji { font-size: 40px; display: block; margin-bottom: 12px; }
 </style>
 </head>
 <body>
-  <div>
-    <h1>Привет, Бобёр 🦫</h1>
-    <p>Тестовый деплой прошёл успешно.</p>
+
+<div class="home-screen">
+  <div id="content" style="display:none;">
+    <span class="emoji">🦫</span>
+    <h1>Привет, <span id="userName"></span>!</h1>
+    <p>Лента появится на следующем этапе.</p>
+    <button class="btn btn-secondary" id="logoutBtn">Выйти</button>
   </div>
+</div>
+
+<script>
+  // Проверка сессии — если не залогинен, уходим на экран входа
+  fetch('api/me.php')
+    .then(res => {
+      if (!res.ok) throw new Error('not authorized');
+      return res.json();
+    })
+    .then(user => {
+      document.getElementById('userName').textContent = user.username;
+      document.getElementById('content').style.display = '';
+    })
+    .catch(() => {
+      window.location.href = 'login.html';
+    });
+
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await fetch('api/logout.php', { method: 'POST' });
+    window.location.href = 'login.html';
+  });
+</script>
+
 </body>
 </html>
