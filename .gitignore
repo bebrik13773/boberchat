@@ -1,0 +1,20 @@
+# Local config / secrets — never commit real credentials
+/public/config.php
+/public/api/config.php
+*.env
+.env.local
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Dependencies (if any get added later)
+/vendor/
+/node_modules/
