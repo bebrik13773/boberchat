@@ -98,46 +98,46 @@
     </div>
 
     <div class="auth-tabs">
-      <div class="auth-tab active">Вход</div>
-      <div class="auth-tab">Регистрация</div>
+      <div class="auth-tab active" data-tab="login">Вход</div>
+      <div class="auth-tab" data-tab="register">Регистрация</div>
     </div>
 
-    <div class="auth-error">Неверный логин или пароль</div>
+    <div class="auth-error" id="authError"></div>
 
     <!-- Форма входа -->
-    <form class="auth-form-login">
+    <form class="auth-form-login" id="loginForm">
       <div class="auth-field">
         <label class="field-label">Username или email</label>
-        <input type="text" class="input" placeholder="craft_bober">
+        <input type="text" class="input" id="loginUsername" placeholder="craft_bober" required>
       </div>
       <div class="auth-field">
         <label class="field-label">Пароль</label>
-        <input type="password" class="input" placeholder="••••••••">
+        <input type="password" class="input" id="loginPassword" placeholder="••••••••" required>
       </div>
       <button type="submit" class="btn btn-primary auth-submit">Войти</button>
     </form>
 
-    <!-- Форма регистрации (пока просто рядом видна для вёрстки, потом переключение по табам через JS) -->
-    <form class="auth-form-register" style="display:none;">
+    <!-- Форма регистрации -->
+    <form class="auth-form-register" id="registerForm" style="display:none;">
       <div class="auth-field">
         <label class="field-label">Имя</label>
-        <input type="text" class="input" placeholder="Как тебя называть">
+        <input type="text" class="input" id="registerDisplayName" placeholder="Как тебя называть" required>
       </div>
       <div class="auth-field">
         <label class="field-label">Username</label>
-        <input type="text" class="input" placeholder="только англ. буквы, цифры, _">
+        <input type="text" class="input" id="registerUsername" placeholder="только англ. буквы, цифры, _" required>
       </div>
       <div class="auth-field">
         <label class="field-label">Email</label>
-        <input type="email" class="input" placeholder="you@example.com">
+        <input type="email" class="input" id="registerEmail" placeholder="you@example.com" required>
       </div>
       <div class="auth-field">
         <label class="field-label">Пароль</label>
-        <input type="password" class="input" placeholder="••••••••">
+        <input type="password" class="input" id="registerPassword" placeholder="••••••••" required>
       </div>
       <div class="auth-field">
         <label class="field-label">Инвайт-код</label>
-        <input type="text" class="input" placeholder="Код приглашения">
+        <input type="text" class="input" id="registerInvite" placeholder="Код приглашения" required>
       </div>
       <button type="submit" class="btn btn-primary auth-submit">Создать аккаунт</button>
     </form>
@@ -146,6 +146,107 @@
 
   </div>
 </div>
+
+<script>
+  const tabs = document.querySelectorAll('.auth-tab');
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  const errorBox = document.getElementById('authError');
+
+  function showError(message) {
+    errorBox.textContent = message;
+    errorBox.style.display = 'block';
+  }
+  function hideError() {
+    errorBox.style.display = 'none';
+  }
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      hideError();
+      if (tab.dataset.tab === 'login') {
+        loginForm.style.display = '';
+        registerForm.style.display = 'none';
+      } else {
+        loginForm.style.display = 'none';
+        registerForm.style.display = '';
+      }
+    });
+  });
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideError();
+
+    const submitBtn = loginForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+
+    try {
+      const res = await fetch('api/login.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: document.getElementById('loginUsername').value.trim(),
+          password: document.getElementById('loginPassword').value,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showError(data.error || 'Не удалось войти');
+        return;
+      }
+
+      // Успешный вход — пока просто уходим на index.html (лента появится на Этапе 5)
+      window.location.href = 'index.html';
+    } catch (err) {
+      showError('Ошибка сети, попробуй ещё раз');
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  registerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideError();
+
+    const submitBtn = registerForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+
+    try {
+      const res = await fetch('api/register.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          display_name: document.getElementById('registerDisplayName').value.trim(),
+          username: document.getElementById('registerUsername').value.trim(),
+          email: document.getElementById('registerEmail').value.trim(),
+          password: document.getElementById('registerPassword').value,
+          invite_code: document.getElementById('registerInvite').value.trim(),
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showError(data.error || 'Не удалось зарегистрироваться');
+        return;
+      }
+
+      // Успешная регистрация — переключаем на вкладку входа
+      document.querySelector('.auth-tab[data-tab="login"]').click();
+      document.getElementById('loginUsername').value = document.getElementById('registerUsername').value;
+      showError('Аккаунт создан! Теперь войди.');
+      errorBox.style.background = 'rgba(126, 224, 129, 0.12)';
+      errorBox.style.color = 'var(--success)';
+    } catch (err) {
+      showError('Ошибка сети, попробуй ещё раз');
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+</script>
 
 </body>
 </html>
