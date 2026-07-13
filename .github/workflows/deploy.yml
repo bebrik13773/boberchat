@@ -8,10 +8,10 @@ on:
       target_environment:
         description: 'Target environment'
         required: true
-        default: 'test'
+        default: 'beta'
         type: choice
         options:
-          - test
+          - beta
           - production
 
 name: 🚀 Deploy БоберЧат
@@ -70,16 +70,16 @@ jobs:
             echo "target_dir=htdocs/" >> $GITHUB_OUTPUT
             echo "env_name=Production" >> $GITHUB_OUTPUT
           else
-            echo "target_dir=htdocs/test/" >> $GITHUB_OUTPUT
-            echo "env_name=Test" >> $GITHUB_OUTPUT
+            echo "target_dir=htdocs/beta/" >> $GITHUB_OUTPUT
+            echo "env_name=Beta" >> $GITHUB_OUTPUT
           fi
         else
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
             echo "target_dir=htdocs/" >> $GITHUB_OUTPUT
             echo "env_name=Production" >> $GITHUB_OUTPUT
           else
-            echo "target_dir=htdocs/test/" >> $GITHUB_OUTPUT
-            echo "env_name=Test" >> $GITHUB_OUTPUT
+            echo "target_dir=htdocs/beta/" >> $GITHUB_OUTPUT
+            echo "env_name=Beta" >> $GITHUB_OUTPUT
           fi
         fi
         echo "branch_name=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
