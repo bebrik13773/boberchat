@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>БоберЧат — вход</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .auth-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .auth-box {
+    width: 100%;
+    max-width: 380px;
+  }
+
+  .auth-logo {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .auth-logo .emoji {
+    font-size: 40px;
+    display: block;
+    margin-bottom: 8px;
+  }
+  .auth-logo h1 {
+    margin: 0;
+    font-size: 24px;
+  }
+  .auth-logo p {
+    margin: 4px 0 0;
+    font-size: 14px;
+  }
+
+  .auth-tabs {
+    display: flex;
+    background: var(--bg-input);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    margin-bottom: 20px;
+  }
+  .auth-tab {
+    flex: 1;
+    text-align: center;
+    padding: 9px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text-secondary);
+  }
+  .auth-tab.active {
+    background: var(--accent);
+    color: var(--text-on-accent);
+  }
+
+  .auth-field {
+    margin-bottom: 14px;
+  }
+
+  .auth-submit {
+    width: 100%;
+    margin-top: 6px;
+  }
+
+  .auth-hint {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 16px;
+  }
+
+  .auth-error {
+    display: none; /* показывается через JS позже */
+    background: rgba(255, 107, 107, 0.12);
+    color: var(--danger);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="auth-screen">
+  <div class="auth-box card">
+
+    <div class="auth-logo">
+      <span class="emoji">🦫</span>
+      <h1>БоберЧат</h1>
+      <p>Вход в закрытую ленту и чат</p>
+    </div>
+
+    <div class="auth-tabs">
+      <div class="auth-tab active">Вход</div>
+      <div class="auth-tab">Регистрация</div>
+    </div>
+
+    <div class="auth-error">Неверный логин или пароль</div>
+
+    <!-- Форма входа -->
+    <form class="auth-form-login">
+      <div class="auth-field">
+        <label class="field-label">Username или email</label>
+        <input type="text" class="input" placeholder="craft_bober">
+      </div>
+      <div class="auth-field">
+        <label class="field-label">Пароль</label>
+        <input type="password" class="input" placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn btn-primary auth-submit">Войти</button>
+    </form>
+
+    <!-- Форма регистрации (пока просто рядом видна для вёрстки, потом переключение по табам через JS) -->
+    <form class="auth-form-register" style="display:none;">
+      <div class="auth-field">
+        <label class="field-label">Имя</label>
+        <input type="text" class="input" placeholder="Как тебя называть">
+      </div>
+      <div class="auth-field">
+        <label class="field-label">Username</label>
+        <input type="text" class="input" placeholder="только англ. буквы, цифры, _">
+      </div>
+      <div class="auth-field">
+        <label class="field-label">Email</label>
+        <input type="email" class="input" placeholder="you@example.com">
+      </div>
+      <div class="auth-field">
+        <label class="field-label">Пароль</label>
+        <input type="password" class="input" placeholder="••••••••">
+      </div>
+      <div class="auth-field">
+        <label class="field-label">Инвайт-код</label>
+        <input type="text" class="input" placeholder="Код приглашения">
+      </div>
+      <button type="submit" class="btn btn-primary auth-submit">Создать аккаунт</button>
+    </form>
+
+    <p class="auth-hint">Доступ только по приглашению</p>
+
+  </div>
+</div>
+
+</body>
+</html>
