@@ -7,6 +7,8 @@
 
 session_start();
 header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Pragma: no-cache');
 
 if (empty($_SESSION['user_id'])) {
     http_response_code(401);

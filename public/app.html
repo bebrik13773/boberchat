@@ -59,7 +59,7 @@
     appContent.style.opacity = '0';
 
     try {
-      const res = await fetch(routes[route]);
+      const res = await fetch(routes[route], { cache: 'no-store' });
       if (!res.ok) throw new Error('view not found');
       const html = await res.text();
 
@@ -93,7 +93,7 @@
   });
 
   // Проверка авторизации перед первой загрузкой
-  fetch('api/me.php')
+  fetch('api/me.php', { cache: 'no-store' })
     .then(res => {
       if (!res.ok) throw new Error('not authorized');
       const initialRoute = window.location.hash.replace('#', '') || 'feed';
