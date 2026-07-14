@@ -35,17 +35,23 @@
     <span class="icon">👤</span>
     <span>Профиль</span>
   </a>
+  <a href="#moderation" class="bottom-nav-item" data-route="moderation" id="moderationNavItem" style="display:none;">
+    <span class="icon">🛡️</span>
+    <span>Модерация</span>
+  </a>
 </nav>
 
 <script>
 (function () {
   const appContent = document.getElementById('appContent');
   const navItems = document.querySelectorAll('.bottom-nav-item');
+  const moderationNavItem = document.getElementById('moderationNavItem');
 
   const routes = {
     feed: 'views/feed.php',
     chats: 'views/chats.php',
     profile: 'views/profile.php',
+    moderation: 'views/moderation.php',
   };
 
   async function loadRoute(route) {
@@ -96,6 +102,12 @@
   fetch('api/me.php', { cache: 'no-store' })
     .then(res => {
       if (!res.ok) throw new Error('not authorized');
+      return res.json();
+    })
+    .then(user => {
+      if (user.role === 'moderator' || user.role === 'admin') {
+        moderationNavItem.style.display = '';
+      }
       const initialRoute = window.location.hash.replace('#', '') || 'feed';
       loadRoute(initialRoute);
     })
