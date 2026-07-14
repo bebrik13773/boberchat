@@ -75,10 +75,67 @@ header('Pragma: no-cache');
         </p>
         <button class="btn btn-secondary" id="editProfileBtn">Редактировать профиль</button>
       </div>
+
+      <div class="card" id="editForm" style="display:none; margin-bottom:14px;">
+        <div class="auth-field" style="margin-bottom:14px;">
+          <label class="field-label">Имя</label>
+          <input type="text" class="input" id="editDisplayName" value="${profile.display_name ? escapeHtml(profile.display_name) : ''}">
+        </div>
+        <div class="auth-field" style="margin-bottom:14px;">
+          <label class="field-label">Username</label>
+          <input type="text" class="input" id="editUsername" value="${profile.username ? escapeHtml(profile.username) : ''}">
+        </div>
+        <div class="auth-field" style="margin-bottom:14px;">
+          <label class="field-label">О себе</label>
+          <textarea class="textarea" id="editBio">${profile.bio ? escapeHtml(profile.bio) : ''}</textarea>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-ghost" id="cancelEditBtn" style="flex:1;">Отмена</button>
+          <button class="btn btn-primary" id="saveProfileBtn" style="flex:1;">Сохранить</button>
+        </div>
+      </div>
     `;
 
+    const editForm = document.getElementById('editForm');
+
     document.getElementById('editProfileBtn').addEventListener('click', () => {
-      alert('Редактирование профиля появится на следующем шаге');
+      editForm.style.display = editForm.style.display === 'none' ? '' : 'none';
+    });
+
+    document.getElementById('cancelEditBtn').addEventListener('click', () => {
+      editForm.style.display = 'none';
+    });
+
+    document.getElementById('saveProfileBtn').addEventListener('click', async (e) => {
+      const btn = e.target;
+      const originalLabel = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Сохраняем…';
+
+      try {
+        const res = await fetch('api/update_profile.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            display_name: document.getElementById('editDisplayName').value.trim(),
+            username: document.getElementById('editUsername').value.trim(),
+            bio: document.getElementById('editBio').value.trim(),
+          }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          alert(data.error || 'Не удалось сохранить');
+          return;
+        }
+
+        await loadProfile();
+      } catch (err) {
+        alert('Ошибка сети');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalLabel;
+      }
     });
   }
 
