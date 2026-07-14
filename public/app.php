@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (empty($_SESSION['user_id'])) {
-    header('Location: /login.html');
+    header('Location: /login.php');
     exit;
 }
 header('Cache-Control: no-store, no-cache, must-revalidate');
@@ -121,7 +121,7 @@ header('Pragma: no-cache');
       loadRoute(initialRoute);
     })
     .catch(() => {
-      window.location.href = 'login.html';
+      window.location.href = 'login.php';
     });
 })();
 </script>
