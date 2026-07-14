@@ -1,3 +1,10 @@
+<?php
+session_start();
+if (empty($_SESSION['user_id'])) {
+    http_response_code(401);
+    exit;
+}
+?>
 <div class="page-header">🦫 БоберЧат</div>
 
 <div class="feed page-content">
