@@ -122,7 +122,7 @@ header('Pragma: no-cache');
         <div class="post-text">${escapeHtml(post.text)}</div>
         ${imageHtml}
         <div class="post-actions">
-          <button class="post-action like-btn ${likedClass}">❤ ${post.like_count}</button>
+          <button class="post-action like-btn ${likedClass}" data-post-id="${post.id}">❤ ${post.like_count}</button>
           <button class="post-action">💬 ${post.comment_count}</button>
         </div>
       </div>
@@ -144,6 +144,35 @@ header('Pragma: no-cache');
       postsContainer.innerHTML = '<div class="empty-state">Не удалось загрузить ленту</div>';
     }
   }
+
+  postsContainer.addEventListener('click', async (e) => {
+    const likeBtn = e.target.closest('.like-btn');
+    if (!likeBtn) return;
+
+    const postId = likeBtn.dataset.postId;
+    likeBtn.disabled = true;
+
+    try {
+      const res = await fetch('api/toggle_like.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ post_id: postId }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || 'Не удалось поставить лайк');
+        return;
+      }
+
+      likeBtn.textContent = `❤ ${data.like_count}`;
+      likeBtn.classList.toggle('liked', data.liked);
+    } catch (err) {
+      alert('Ошибка сети');
+    } finally {
+      likeBtn.disabled = false;
+    }
+  });
 
   postSubmit.addEventListener('click', async () => {
     const text = postText.value.trim();
