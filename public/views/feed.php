@@ -98,6 +98,10 @@ if (empty($_SESSION['user_id'])) {
     const metaHtml = statusBadge || timeAgo(post.created_at);
     const likedClass = post.liked_by_me ? 'liked' : '';
 
+    const imageHtml = post.image_path
+      ? `<img class="post-image" src="${post.image_path}" alt="">`
+      : '';
+
     return `
       <div class="card post-card" data-post-id="${post.id}">
         <div class="post-header">
@@ -108,6 +112,7 @@ if (empty($_SESSION['user_id'])) {
           </div>
         </div>
         <div class="post-text">${escapeHtml(post.text)}</div>
+        ${imageHtml}
         <div class="post-actions">
           <button class="post-action like-btn ${likedClass}">❤ ${post.like_count}</button>
           <button class="post-action">💬 ${post.comment_count}</button>
@@ -134,14 +139,33 @@ if (empty($_SESSION['user_id'])) {
 
   postSubmit.addEventListener('click', async () => {
     const text = postText.value.trim();
-    if (!text) return;
+    if (!text && !selectedPhotoFile) return;
 
     postSubmit.disabled = true;
     try {
+      let imagePath = '';
+
+      if (selectedPhotoFile) {
+        const formData = new FormData();
+        formData.append('photo', selectedPhotoFile);
+
+        const uploadRes = await fetch('api/upload_photo.php', {
+          method: 'POST',
+          body: formData,
+        });
+        const uploadData = await uploadRes.json();
+
+        if (!uploadRes.ok) {
+          alert(uploadData.error || 'Не удалось загрузить фото');
+          return;
+        }
+        imagePath = uploadData.path;
+      }
+
       const res = await fetch('api/create_post.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, image_path: imagePath }),
       });
       const data = await res.json();
 
@@ -149,7 +173,9 @@ if (empty($_SESSION['user_id'])) {
         alert(data.error || 'Не удалось опубликовать пост');
         return;
       }
+
       postText.value = '';
+      photoRemoveBtn.click(); // сбрасываем выбранное фото и превью
       loadFeed();
     } catch (err) {
       alert('Ошибка сети');

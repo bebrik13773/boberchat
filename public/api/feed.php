@@ -39,7 +39,8 @@ $sql = "
         u.avatar_path, u.avatar_status,
         (SELECT COUNT(*) FROM likes WHERE post_id = p.id) AS like_count,
         (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comment_count,
-        EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = ?) AS liked_by_me
+        EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = ?) AS liked_by_me,
+        (SELECT image_path FROM post_images WHERE post_id = p.id ORDER BY sort_order LIMIT 1) AS image_path
     FROM posts p
     JOIN users u ON u.id = p.user_id
     WHERE p.status = 'approved' OR p.user_id = ?
@@ -64,6 +65,7 @@ while ($row = mysqli_fetch_assoc($result)) {
         'like_count' => (int)$row['like_count'],
         'comment_count' => (int)$row['comment_count'],
         'liked_by_me' => (bool)$row['liked_by_me'],
+        'image_path' => $row['image_path'],
         'author' => [
             'id' => (int)$row['author_id'],
             'username' => $row['username'],
