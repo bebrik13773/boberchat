@@ -128,7 +128,7 @@ header('Pragma: no-cache');
 
   async function loadFeed() {
     try {
-      const res = await fetch('api/feed.php');
+      const res = await fetch('api/feed.php', { cache: 'no-store' });
       if (!res.ok) throw new Error('feed error');
       const data = await res.json();
 
@@ -146,11 +146,15 @@ header('Pragma: no-cache');
     const text = postText.value.trim();
     if (!text && !selectedPhotoFile) return;
 
+    const originalLabel = postSubmit.textContent;
     postSubmit.disabled = true;
+    postSubmit.textContent = 'Публикуем…';
+
     try {
       let imagePath = '';
 
       if (selectedPhotoFile) {
+        postSubmit.textContent = 'Загружаем фото…';
         const formData = new FormData();
         formData.append('photo', selectedPhotoFile);
 
@@ -167,6 +171,7 @@ header('Pragma: no-cache');
         imagePath = uploadData.path;
       }
 
+      postSubmit.textContent = 'Публикуем…';
       const res = await fetch('api/create_post.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -181,11 +186,12 @@ header('Pragma: no-cache');
 
       postText.value = '';
       photoRemoveBtn.click(); // сбрасываем выбранное фото и превью
-      loadFeed();
+      await loadFeed();
     } catch (err) {
       alert('Ошибка сети');
     } finally {
       postSubmit.disabled = false;
+      postSubmit.textContent = originalLabel;
     }
   });
 
