@@ -95,6 +95,9 @@ header('Pragma: no-cache');
       statusBadge = '<span class="badge badge-pending">На модерации</span>';
     } else if (post.status === 'rejected') {
       statusBadge = '<span class="badge badge-rejected">Отклонён</span>';
+      if (post.rejection_reason) {
+        statusBadge += `<div class="rejection-reason">Причина: ${escapeHtml(post.rejection_reason)}</div>`;
+      }
     }
 
     const metaHtml = statusBadge || timeAgo(post.created_at);

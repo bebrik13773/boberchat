@@ -33,7 +33,7 @@ $conn = db_connect();
 
 $sql = "
     SELECT
-        p.id, p.text_content, p.status, p.is_pinned, p.created_at,
+        p.id, p.text_content, p.status, p.rejection_reason, p.is_pinned, p.created_at,
         u.id AS author_id, u.username,
         u.display_name, u.display_name_status,
         u.avatar_path, u.avatar_status,
@@ -59,6 +59,7 @@ while ($row = mysqli_fetch_assoc($result)) {
         'id' => (int)$row['id'],
         'text' => $row['text_content'],
         'status' => $row['status'],
+        'rejection_reason' => $row['rejection_reason'],
         'is_pinned' => (bool)$row['is_pinned'],
         'created_at' => $row['created_at'],
         'is_mine' => (int)$row['author_id'] === $currentUserId,
