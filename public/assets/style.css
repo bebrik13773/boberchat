@@ -287,3 +287,51 @@ p {
 .avatar-sm { width: 32px; height: 32px; }
 .avatar-md { width: 48px; height: 48px; }
 .avatar-lg { width: 88px; height: 88px; }
+
+/* ============================================
+   Нижняя навигация (мобильный формат)
+   ============================================ */
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-soft);
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  z-index: 20;
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 4px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.bottom-nav-item .icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.bottom-nav-item.active {
+  color: var(--accent);
+}
+
+.bottom-nav-item:hover {
+  color: var(--text-primary);
+}
+
+/* Отступ снизу у контента, чтобы нижнее меню его не перекрывало */
+.page-content {
+  padding-bottom: 76px;
+}
