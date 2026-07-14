@@ -74,7 +74,10 @@ header('Pragma: no-cache');
   }
 
   function timeAgo(isoString) {
-    const date = new Date(isoString.replace(' ', 'T'));
+    // MySQL хранит created_at в UTC (время сервера), но без явной пометки
+    // JS интерпретирует такую строку как локальное время браузера — добавляем "Z",
+    // чтобы Date правильно понял, что это UTC, и разница считалась верно.
+    const date = new Date(isoString.replace(' ', 'T') + 'Z');
     const diffSec = Math.floor((Date.now() - date.getTime()) / 1000);
     if (diffSec < 60) return 'только что';
     if (diffSec < 3600) return Math.floor(diffSec / 60) + ' мин назад';
