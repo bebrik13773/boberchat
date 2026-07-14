@@ -55,8 +55,8 @@ header('Pragma: no-cache');
         <div class="post-text">${escapeHtml(post.text)}</div>
         ${imageHtml}
         <div class="moderation-actions">
-          <button class="btn btn-secondary reject-btn">Отклонить</button>
-          <button class="btn btn-primary approve-btn">Одобрить</button>
+          <button class="btn btn-secondary reject-btn" data-post-id="${post.id}">Отклонить</button>
+          <button class="btn btn-primary approve-btn" data-post-id="${post.id}">Одобрить</button>
         </div>
       </div>
     `;
@@ -77,6 +77,65 @@ header('Pragma: no-cache');
       container.innerHTML = '<div class="empty-state">Не удалось загрузить очередь</div>';
     }
   }
+
+  function removeCard(postId) {
+    const card = container.querySelector(`[data-post-id="${postId}"]`);
+    if (card) card.remove();
+    if (!container.querySelector('.moderation-card')) {
+      container.innerHTML = '<div class="empty-state">Очередь пуста 🎉</div>';
+    }
+  }
+
+  container.addEventListener('click', async (e) => {
+    const approveBtn = e.target.closest('.approve-btn');
+    const rejectBtn = e.target.closest('.reject-btn');
+
+    if (approveBtn) {
+      const postId = approveBtn.dataset.postId;
+      approveBtn.disabled = true;
+      try {
+        const res = await fetch('api/moderation_approve.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ post_id: postId }),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          alert(data.error || 'Не удалось одобрить пост');
+          approveBtn.disabled = false;
+          return;
+        }
+        removeCard(postId);
+      } catch (err) {
+        alert('Ошибка сети');
+        approveBtn.disabled = false;
+      }
+    }
+
+    if (rejectBtn) {
+      const postId = rejectBtn.dataset.postId;
+      const reason = prompt('Причина отклонения (необязательно):', '') || '';
+
+      rejectBtn.disabled = true;
+      try {
+        const res = await fetch('api/moderation_reject.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ post_id: postId, reason }),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          alert(data.error || 'Не удалось отклонить пост');
+          rejectBtn.disabled = false;
+          return;
+        }
+        removeCard(postId);
+      } catch (err) {
+        alert('Ошибка сети');
+        rejectBtn.disabled = false;
+      }
+    }
+  });
 
   loadQueue();
 })();
