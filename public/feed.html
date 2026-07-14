@@ -30,9 +30,52 @@
   .composer textarea {
     margin-bottom: 10px;
   }
+  .composer-photo-preview {
+    display: none;
+    position: relative;
+    margin-bottom: 10px;
+  }
+  .composer-photo-preview img {
+    width: 100%;
+    max-height: 240px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    display: block;
+  }
+  .composer-photo-remove {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(20, 16, 31, 0.75);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-size: 14px;
+  }
   .composer-footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .composer-photo-btn {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    font-family: inherit;
+    padding: 6px 8px;
+    border-radius: 6px;
+  }
+  .composer-photo-btn:hover {
+    background: var(--accent-soft-bg);
+    color: var(--text-primary);
   }
 
   /* Карточка поста */
@@ -114,7 +157,15 @@
   <!-- Форма создания поста -->
   <div class="card composer">
     <textarea class="textarea" id="postText" placeholder="Что нового, Бобёр?"></textarea>
+
+    <div class="composer-photo-preview" id="photoPreview">
+      <img id="photoPreviewImg" src="" alt="">
+      <button class="composer-photo-remove" id="photoRemoveBtn">✕</button>
+    </div>
+
     <div class="composer-footer">
+      <button class="composer-photo-btn" id="photoPickBtn">📷 Фото</button>
+      <input type="file" id="photoInput" accept="image/*" style="display:none;">
       <button class="btn btn-primary" id="postSubmit">Опубликовать</button>
     </div>
   </div>
@@ -144,6 +195,35 @@
   const postsContainer = document.getElementById('postsContainer');
   const postText = document.getElementById('postText');
   const postSubmit = document.getElementById('postSubmit');
+  const photoPickBtn = document.getElementById('photoPickBtn');
+  const photoInput = document.getElementById('photoInput');
+  const photoPreview = document.getElementById('photoPreview');
+  const photoPreviewImg = document.getElementById('photoPreviewImg');
+  const photoRemoveBtn = document.getElementById('photoRemoveBtn');
+
+  let selectedPhotoFile = null;
+
+  photoPickBtn.addEventListener('click', () => photoInput.click());
+
+  photoInput.addEventListener('change', () => {
+    const file = photoInput.files[0];
+    if (!file) return;
+
+    selectedPhotoFile = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      photoPreviewImg.src = e.target.result;
+      photoPreview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  photoRemoveBtn.addEventListener('click', () => {
+    selectedPhotoFile = null;
+    photoInput.value = '';
+    photoPreview.style.display = 'none';
+    photoPreviewImg.src = '';
+  });
 
   function escapeHtml(str) {
     const div = document.createElement('div');
