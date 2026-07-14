@@ -288,6 +288,20 @@ p {
 .avatar-md { width: 48px; height: 48px; }
 .avatar-lg { width: 88px; height: 88px; }
 
+.avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-soft);
+  font-size: 1.4em;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.avatar-lg.avatar-placeholder {
+  font-size: 2.6em;
+}
+
 /* ============================================
    Нижняя навигация (мобильный формат)
    ============================================ */
@@ -331,9 +345,11 @@ p {
   color: var(--text-primary);
 }
 
-/* Отступ снизу у контента, чтобы нижнее меню его не перекрывало */
+/* Отступ снизу у контента, чтобы нижнее меню его не перекрывало.
+   Запас больше высоты самого меню, т.к. на телефонах с жест-панелью
+   добавляется safe-area-inset-bottom, который может быть заметным. */
 .page-content {
-  padding-bottom: 76px;
+  padding-bottom: 110px;
 }
 
 /* ============================================
