@@ -127,7 +127,14 @@ header('Pragma: no-cache');
         ${imageHtml}
         <div class="post-actions">
           <button class="post-action like-btn ${likedClass}" data-post-id="${post.id}">❤ ${post.like_count}</button>
-          <button class="post-action">💬 ${post.comment_count}</button>
+          <button class="post-action comment-toggle-btn" data-post-id="${post.id}">💬 <span class="comment-count">${post.comment_count}</span></button>
+        </div>
+        <div class="comments-section" data-comments-for="${post.id}">
+          <div class="comments-list">Загрузка комментариев…</div>
+          <div class="comment-form">
+            <input type="text" class="input comment-input" placeholder="Написать комментарий…">
+            <button class="btn btn-primary comment-submit-btn">➤</button>
+          </div>
         </div>
       </div>
     `;
@@ -180,6 +187,87 @@ header('Pragma: no-cache');
       alert('Ошибка сети');
     } finally {
       likeBtn.disabled = false;
+    }
+  });
+
+  // --- Комментарии ---
+
+  function renderComment(comment) {
+    const name = comment.author.display_name || `@${escapeHtml(comment.author.username)}`;
+    return `
+      <div class="comment-item">
+        <div class="comment-body">
+          <div class="comment-author">${escapeHtml(name)}</div>
+          <div class="comment-text">${escapeHtml(comment.text)}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function loadComments(postId, listEl) {
+    try {
+      const res = await fetch('api/get_comments.php?post_id=' + postId, { cache: 'no-store' });
+      if (!res.ok) throw new Error('error');
+      const data = await res.json();
+
+      listEl.innerHTML = data.comments.length
+        ? data.comments.map(renderComment).join('')
+        : '<div class="empty-state" style="padding:12px;">Пока нет комментариев</div>';
+    } catch (err) {
+      listEl.innerHTML = '<div class="empty-state" style="padding:12px;">Не удалось загрузить</div>';
+    }
+  }
+
+  postsContainer.addEventListener('click', async (e) => {
+    const toggleBtn = e.target.closest('.comment-toggle-btn');
+    if (toggleBtn) {
+      const postId = toggleBtn.dataset.postId;
+      const section = postsContainer.querySelector(`.comments-section[data-comments-for="${postId}"]`);
+      const isHidden = section.style.display === 'none' || !section.style.display;
+
+      section.style.display = isHidden ? 'block' : 'none';
+
+      if (isHidden) {
+        const listEl = section.querySelector('.comments-list');
+        loadComments(postId, listEl);
+      }
+      return;
+    }
+
+    const submitBtn = e.target.closest('.comment-submit-btn');
+    if (submitBtn) {
+      const section = submitBtn.closest('.comments-section');
+      const postId = section.dataset.commentsFor;
+      const input = section.querySelector('.comment-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      submitBtn.disabled = true;
+      try {
+        const res = await fetch('api/add_comment.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ post_id: postId, text }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          alert(data.error || 'Не удалось добавить комментарий');
+          return;
+        }
+
+        input.value = '';
+        const listEl = section.querySelector('.comments-list');
+        await loadComments(postId, listEl);
+
+        // Обновляем счётчик комментариев на кнопке без перезагрузки всей ленты
+        const countEl = postsContainer.querySelector(`.comment-toggle-btn[data-post-id="${postId}"] .comment-count`);
+        if (countEl) countEl.textContent = parseInt(countEl.textContent, 10) + 1;
+      } catch (err) {
+        alert('Ошибка сети');
+      } finally {
+        submitBtn.disabled = false;
+      }
     }
   });
 
