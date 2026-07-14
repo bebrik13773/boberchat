@@ -1,10 +1,19 @@
+<?php
+session_start();
+if (empty($_SESSION['user_id'])) {
+    header('Location: /login.html');
+    exit;
+}
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Pragma: no-cache');
+?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>БоберЧат</title>
-<link rel="stylesheet" href="assets/style.css?v=6">
+<link rel="stylesheet" href="assets/style.css?v=7">
 <style>
   #appContent {
     min-height: calc(100vh - 76px);

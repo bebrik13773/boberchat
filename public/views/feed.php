@@ -104,7 +104,11 @@ header('Pragma: no-cache');
     }
 
     const metaHtml = statusBadge || timeAgo(post.created_at);
-    const likedClass = post.liked_by_me ? 'liked' : '';
+    let likedClass = post.liked_by_me ? 'liked' : '';
+    if (post.liked_by_me) {
+      if (post.like_count >= 10) likedClass += ' liked-lvl-3';
+      else if (post.like_count >= 3) likedClass += ' liked-lvl-2';
+    }
 
     const imageHtml = post.image_path
       ? `<img class="post-image" src="${post.image_path}" alt="">`
@@ -167,6 +171,11 @@ header('Pragma: no-cache');
 
       likeBtn.textContent = `❤ ${data.like_count}`;
       likeBtn.classList.toggle('liked', data.liked);
+      likeBtn.classList.remove('liked-lvl-2', 'liked-lvl-3');
+      if (data.liked) {
+        if (data.like_count >= 10) likeBtn.classList.add('liked-lvl-3');
+        else if (data.like_count >= 3) likeBtn.classList.add('liked-lvl-2');
+      }
     } catch (err) {
       alert('Ошибка сети');
     } finally {

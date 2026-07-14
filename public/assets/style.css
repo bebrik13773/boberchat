@@ -481,6 +481,13 @@ p {
 .post-action.liked {
   color: var(--accent);
 }
+.post-action.liked.liked-lvl-2 {
+  color: #c9a3ff;
+}
+.post-action.liked.liked-lvl-3 {
+  color: #e0c3ff;
+  text-shadow: 0 0 8px rgba(224, 195, 255, 0.5);
+}
 
 /* ============================================
    Модерация
