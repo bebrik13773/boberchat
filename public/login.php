@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!empty($_SESSION['user_id'])) {
-    header('Location: /app.php');
+    header('Location: app.php');
     exit;
 }
 header('Cache-Control: no-store, no-cache, must-revalidate');
