@@ -14,8 +14,14 @@ header('Pragma: no-cache');
 <div class="page-header">🛡️ Модерация</div>
 
 <div class="feed page-content">
+  <h3 style="margin: 8px 0 12px;">Посты</h3>
   <div id="moderationContainer">
     <div class="empty-state">Загрузка очереди…</div>
+  </div>
+
+  <h3 style="margin: 20px 0 12px;">Профили</h3>
+  <div id="profileModerationContainer">
+    <div class="empty-state">Загрузка…</div>
   </div>
 </div>
 
@@ -139,5 +145,76 @@ header('Pragma: no-cache');
   });
 
   loadQueue();
+
+  // --- Профильные поля ---
+  const profileContainer = document.getElementById('profileModerationContainer');
+
+  function renderProfileItem(item) {
+    const fieldsHtml = item.fields.map(f => `
+      <div style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid var(--border-soft);">
+        <div style="font-size:13px; color:var(--text-secondary); margin-bottom:6px;">
+          ${f.label}: <b style="color:var(--text-primary);">${f.field === 'avatar' ? '(фото)' : escapeHtml(f.value || '')}</b>
+        </div>
+        ${f.field === 'avatar' && f.value ? `<img src="${f.value}" class="avatar avatar-md" style="margin-bottom:8px;">` : ''}
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-secondary profile-reject-btn" data-user-id="${item.user_id}" data-field="${f.field}" style="flex:1;">Отклонить</button>
+          <button class="btn btn-primary profile-approve-btn" data-user-id="${item.user_id}" data-field="${f.field}" style="flex:1;">Одобрить</button>
+        </div>
+      </div>
+    `).join('');
+
+    return `
+      <div class="card moderation-card" data-user-card="${item.user_id}">
+        <div class="post-meta-author"><b>@${escapeHtml(item.username)}</b></div>
+        ${fieldsHtml}
+      </div>
+    `;
+  }
+
+  async function loadProfileQueue() {
+    try {
+      const res = await fetch('api/moderation_profile_queue.php', { cache: 'no-store' });
+      if (!res.ok) throw new Error('error');
+      const data = await res.json();
+
+      if (data.items.length === 0) {
+        profileContainer.innerHTML = '<div class="empty-state">Очередь пуста 🎉</div>';
+        return;
+      }
+      profileContainer.innerHTML = data.items.map(renderProfileItem).join('');
+    } catch (err) {
+      profileContainer.innerHTML = '<div class="empty-state">Не удалось загрузить</div>';
+    }
+  }
+
+  profileContainer.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.profile-approve-btn, .profile-reject-btn');
+    if (!btn) return;
+
+    const decision = btn.classList.contains('profile-approve-btn') ? 'approved' : 'rejected';
+    const userId = btn.dataset.userId;
+    const field = btn.dataset.field;
+
+    btn.disabled = true;
+    try {
+      const res = await fetch('api/moderation_profile_decide.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, field, decision }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || 'Не удалось сохранить решение');
+        btn.disabled = false;
+        return;
+      }
+      loadProfileQueue(); // проще перезагрузить весь блок, чем точечно убирать одно поле
+    } catch (err) {
+      alert('Ошибка сети');
+      btn.disabled = false;
+    }
+  });
+
+  loadProfileQueue();
 })();
 </script>

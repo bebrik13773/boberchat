@@ -1,10 +1,19 @@
+<?php
+session_start();
+if (empty($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Pragma: no-cache');
+?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>БоберЧат</title>
-<link rel="stylesheet" href="assets/style.css?v=6">
+<link rel="stylesheet" href="assets/style.css?v=8">
 <style>
   #appContent {
     min-height: calc(100vh - 76px);
@@ -54,8 +63,23 @@
     moderation: 'views/moderation.php',
   };
 
-  async function loadRoute(route) {
-    if (!routes[route]) route = 'feed';
+  async function loadRoute(rawRoute) {
+    let route = rawRoute;
+    let viewUrl = routes[route];
+    let chatId = null;
+
+    // Параметризованный маршрут: chat-42 -> views/chat.php?id=42
+    const chatMatch = rawRoute.match(/^chat-(\d+)$/);
+    if (chatMatch) {
+      chatId = chatMatch[1];
+      viewUrl = 'views/chat.php?id=' + chatId;
+      route = 'chats'; // подсвечиваем пункт "Чат" в меню
+    }
+
+    if (!viewUrl) {
+      route = 'feed';
+      viewUrl = routes.feed;
+    }
 
     // Подсветка активного пункта меню
     navItems.forEach(item => {
@@ -65,7 +89,7 @@
     appContent.style.opacity = '0';
 
     try {
-      const res = await fetch(routes[route], { cache: 'no-store' });
+      const res = await fetch(viewUrl, { cache: 'no-store' });
       if (!res.ok) throw new Error('view not found');
       const html = await res.text();
 
@@ -112,7 +136,7 @@
       loadRoute(initialRoute);
     })
     .catch(() => {
-      window.location.href = 'login.html';
+      window.location.href = 'login.php';
     });
 })();
 </script>

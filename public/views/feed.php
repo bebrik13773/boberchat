@@ -104,7 +104,11 @@ header('Pragma: no-cache');
     }
 
     const metaHtml = statusBadge || timeAgo(post.created_at);
-    const likedClass = post.liked_by_me ? 'liked' : '';
+    let likedClass = post.liked_by_me ? 'liked' : '';
+    if (post.liked_by_me) {
+      if (post.like_count >= 10) likedClass += ' liked-lvl-3';
+      else if (post.like_count >= 3) likedClass += ' liked-lvl-2';
+    }
 
     const imageHtml = post.image_path
       ? `<img class="post-image" src="${post.image_path}" alt="">`
@@ -122,8 +126,15 @@ header('Pragma: no-cache');
         <div class="post-text">${escapeHtml(post.text)}</div>
         ${imageHtml}
         <div class="post-actions">
-          <button class="post-action like-btn ${likedClass}">❤ ${post.like_count}</button>
-          <button class="post-action">💬 ${post.comment_count}</button>
+          <button class="post-action like-btn ${likedClass}" data-post-id="${post.id}">❤ ${post.like_count}</button>
+          <button class="post-action comment-toggle-btn" data-post-id="${post.id}">💬 <span class="comment-count">${post.comment_count}</span></button>
+        </div>
+        <div class="comments-section" data-comments-for="${post.id}">
+          <div class="comments-list">Загрузка комментариев…</div>
+          <div class="comment-form">
+            <input type="text" class="input comment-input" placeholder="Написать комментарий…">
+            <button class="btn btn-primary comment-submit-btn">➤</button>
+          </div>
         </div>
       </div>
     `;
@@ -144,6 +155,121 @@ header('Pragma: no-cache');
       postsContainer.innerHTML = '<div class="empty-state">Не удалось загрузить ленту</div>';
     }
   }
+
+  postsContainer.addEventListener('click', async (e) => {
+    const likeBtn = e.target.closest('.like-btn');
+    if (!likeBtn) return;
+
+    const postId = likeBtn.dataset.postId;
+    likeBtn.disabled = true;
+
+    try {
+      const res = await fetch('api/toggle_like.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ post_id: postId }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || 'Не удалось поставить лайк');
+        return;
+      }
+
+      likeBtn.textContent = `❤ ${data.like_count}`;
+      likeBtn.classList.toggle('liked', data.liked);
+      likeBtn.classList.remove('liked-lvl-2', 'liked-lvl-3');
+      if (data.liked) {
+        if (data.like_count >= 10) likeBtn.classList.add('liked-lvl-3');
+        else if (data.like_count >= 3) likeBtn.classList.add('liked-lvl-2');
+      }
+    } catch (err) {
+      alert('Ошибка сети');
+    } finally {
+      likeBtn.disabled = false;
+    }
+  });
+
+  // --- Комментарии ---
+
+  function renderComment(comment) {
+    const name = comment.author.display_name || `@${escapeHtml(comment.author.username)}`;
+    return `
+      <div class="comment-item">
+        <div class="comment-body">
+          <div class="comment-author">${escapeHtml(name)}</div>
+          <div class="comment-text">${escapeHtml(comment.text)}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function loadComments(postId, listEl) {
+    try {
+      const res = await fetch('api/get_comments.php?post_id=' + postId, { cache: 'no-store' });
+      if (!res.ok) throw new Error('error');
+      const data = await res.json();
+
+      listEl.innerHTML = data.comments.length
+        ? data.comments.map(renderComment).join('')
+        : '<div class="empty-state" style="padding:12px;">Пока нет комментариев</div>';
+    } catch (err) {
+      listEl.innerHTML = '<div class="empty-state" style="padding:12px;">Не удалось загрузить</div>';
+    }
+  }
+
+  postsContainer.addEventListener('click', async (e) => {
+    const toggleBtn = e.target.closest('.comment-toggle-btn');
+    if (toggleBtn) {
+      const postId = toggleBtn.dataset.postId;
+      const section = postsContainer.querySelector(`.comments-section[data-comments-for="${postId}"]`);
+      const isHidden = section.style.display === 'none' || !section.style.display;
+
+      section.style.display = isHidden ? 'block' : 'none';
+
+      if (isHidden) {
+        const listEl = section.querySelector('.comments-list');
+        loadComments(postId, listEl);
+      }
+      return;
+    }
+
+    const submitBtn = e.target.closest('.comment-submit-btn');
+    if (submitBtn) {
+      const section = submitBtn.closest('.comments-section');
+      const postId = section.dataset.commentsFor;
+      const input = section.querySelector('.comment-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      submitBtn.disabled = true;
+      try {
+        const res = await fetch('api/add_comment.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ post_id: postId, text }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          alert(data.error || 'Не удалось добавить комментарий');
+          return;
+        }
+
+        input.value = '';
+        const listEl = section.querySelector('.comments-list');
+        await loadComments(postId, listEl);
+
+        // Обновляем счётчик комментариев на кнопке без перезагрузки всей ленты
+        const countEl = postsContainer.querySelector(`.comment-toggle-btn[data-post-id="${postId}"] .comment-count`);
+        if (countEl) countEl.textContent = parseInt(countEl.textContent, 10) + 1;
+      } catch (err) {
+        alert('Ошибка сети');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    }
+  });
 
   postSubmit.addEventListener('click', async () => {
     const text = postText.value.trim();
