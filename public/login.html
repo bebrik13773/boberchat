@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>БоберЧат — вход</title>
+<link rel="stylesheet" href="assets/style.css?v=6">
+<style>
+  .auth-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .auth-box {
+    width: 100%;
+    max-width: 380px;
+  }
+
+  .auth-logo {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .auth-logo .emoji {
+    font-size: 40px;
+    display: block;
+    margin-bottom: 8px;
+  }
+  .auth-logo h1 {
+    margin: 0;
+    font-size: 24px;
+  }
+  .auth-logo p {
+    margin: 4px 0 0;
+    font-size: 14px;
+  }
+
+  .auth-tabs {
+    display: flex;
+    background: var(--bg-input);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    margin-bottom: 20px;
+  }
+  .auth-tab {
+    flex: 1;
+    text-align: center;
+    padding: 9px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text-secondary);
+  }
+  .auth-tab.active {
+    background: var(--accent);
+    color: var(--text-on-accent);
+  }
+
+  .auth-field {
+    margin-bottom: 14px;
+  }
+
+  .auth-submit {
+    width: 100%;
+    margin-top: 6px;
+  }
+
+  .auth-hint {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 16px;
+  }
+
+  .auth-error {
+    display: none; /* показывается через JS позже */
+    background: rgba(255, 107, 107, 0.12);
+    color: var(--danger);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="auth-screen">
+  <div class="auth-box card">
+
+    <div class="auth-logo">
+      <span class="emoji">🦫</span>
+      <h1>БоберЧат</h1>
+      <p>Вход в закрытую ленту и чат</p>
+    </div>
+
+    <div class="auth-tabs">
+      <div class="auth-tab active" data-tab="login">Вход</div>
+      <div class="auth-tab" data-tab="register">Регистрация</div>
+    </div>
+
+    <div class="auth-error" id="authError"></div>
+
+    <!-- Форма входа -->
+    <form class="auth-form-login" id="loginForm">
+      <div class="auth-field">
+        <label class="field-label">Username или email</label>
+        <input type="text" class="input" id="loginUsername" placeholder="craft_bober" required>
+      </div>
+      <div class="auth-field">
+        <label class="field-label">Пароль</label>
+        <input type="password" class="input" id="loginPassword" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn btn-primary auth-submit">Войти</button>
+    </form>
+
+    <!-- Форма регистрации -->
+    <form class="auth-form-register" id="registerForm" style="display:none;">
+      <div class="auth-field">
+        <label class="field-label">Имя</label>
+        <input type="text" class="input" id="registerDisplayName" placeholder="Как тебя называть" required>
+      </div>
+      <div class="auth-field">
+        <label class="field-label">Username</label>
+        <input type="text" class="input" id="registerUsername" placeholder="только англ. буквы, цифры, _" required>
+      </div>
+      <div class="auth-field">
+        <label class="field-label">Email</label>
+        <input type="email" class="input" id="registerEmail" placeholder="you@example.com" required>
+      </div>
+      <div class="auth-field">
+        <label class="field-label">Пароль</label>
+        <input type="password" class="input" id="registerPassword" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn btn-primary auth-submit">Создать аккаунт</button>
+    </form>
+
+    <p class="auth-hint">БоберЧат — закрытая площадка для своих</p>
+
+  </div>
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.auth-tab');
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  const errorBox = document.getElementById('authError');
+
+  function showError(message) {
+    errorBox.textContent = message;
+    errorBox.style.display = 'block';
+  }
+  function hideError() {
+    errorBox.style.display = 'none';
+  }
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      hideError();
+      if (tab.dataset.tab === 'login') {
+        loginForm.style.display = '';
+        registerForm.style.display = 'none';
+      } else {
+        loginForm.style.display = 'none';
+        registerForm.style.display = '';
+      }
+    });
+  });
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideError();
+
+    const submitBtn = loginForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+
+    try {
+      const res = await fetch('api/login.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: document.getElementById('loginUsername').value.trim(),
+          password: document.getElementById('loginPassword').value,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showError(data.error || 'Не удалось войти');
+        return;
+      }
+
+      // Успешный вход — уходим в SPA-приложение
+      window.location.href = 'app.html';
+    } catch (err) {
+      showError('Ошибка сети, попробуй ещё раз');
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  registerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideError();
+
+    const submitBtn = registerForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+
+    try {
+      const res = await fetch('api/register.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          display_name: document.getElementById('registerDisplayName').value.trim(),
+          username: document.getElementById('registerUsername').value.trim(),
+          email: document.getElementById('registerEmail').value.trim(),
+          password: document.getElementById('registerPassword').value,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showError(data.error || 'Не удалось зарегистрироваться');
+        return;
+      }
+
+      // Успешная регистрация — переключаем на вкладку входа
+      document.querySelector('.auth-tab[data-tab="login"]').click();
+      document.getElementById('loginUsername').value = document.getElementById('registerUsername').value;
+      showError('Аккаунт создан! Теперь войди.');
+      errorBox.style.background = 'rgba(126, 224, 129, 0.12)';
+      errorBox.style.color = 'var(--success)';
+    } catch (err) {
+      showError('Ошибка сети, попробуй ещё раз');
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+</script>
+
+</body>
+</html>

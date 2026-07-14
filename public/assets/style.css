@@ -1,0 +1,507 @@
+/* ============================================
+   БоберЧат — базовая дизайн-система
+   Тема по умолчанию: тёмная фиолетовая
+   ============================================ */
+
+:root {
+  /* Фон */
+  --bg-primary: #14101f;       /* основной фон страницы */
+  --bg-secondary: #1c1730;     /* карточки, панели */
+  --bg-elevated: #241d3d;      /* модалки, выпадающие меню */
+  --bg-input: #191430;         /* поля ввода */
+
+  /* Акцент (фиолетовый) */
+  --accent: #a875ff;
+  --accent-hover: #bd91ff;
+  --accent-muted: #6b4fa0;
+  --accent-soft-bg: rgba(168, 117, 255, 0.12); /* подсветка выбранного/hover */
+
+  /* Текст */
+  --text-primary: #ede8ff;
+  --text-secondary: #a89cc8;
+  --text-muted: #6e6389;
+  --text-on-accent: #14101f;
+
+  /* Статусы */
+  --success: #7ee081;
+  --warning: #f5c359;
+  --danger: #ff6b6b;
+  --pending: #7d8bff;          /* цвет для "на модерации" */
+
+  /* Границы */
+  --border: #2e2650;
+  --border-soft: #241d3d;
+
+  /* Радиусы и тени */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.35);
+
+  /* Типографика */
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* Светлая тема (без фиолетового) — переключается классом .theme-light на <body>, задел на будущее */
+.theme-light {
+  --bg-primary: #f7f6fa;
+  --bg-secondary: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-input: #f0eef5;
+
+  --accent: #5b4b8a;
+  --accent-hover: #4a3d72;
+  --accent-muted: #b3a8d1;
+  --accent-soft-bg: rgba(91, 75, 138, 0.08);
+
+  --text-primary: #201c2e;
+  --text-secondary: #5a5470;
+  --text-muted: #918aa3;
+  --text-on-accent: #ffffff;
+
+  --border: #e3e0ec;
+  --border-soft: #ececf3;
+  --shadow-card: 0 4px 16px rgba(30, 20, 60, 0.08);
+}
+
+/* ============================================
+   Базовые сбросы
+   ============================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--accent-hover);
+}
+
+h1, h2, h3, h4 {
+  margin: 0 0 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+h1 { font-size: 28px; }
+h2 { font-size: 22px; }
+h3 { font-size: 18px; }
+
+p {
+  margin: 0 0 12px;
+  color: var(--text-secondary);
+}
+
+/* ============================================
+   Кнопки
+   ============================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--text-on-accent);
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.btn-secondary {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover {
+  border-color: var(--accent-muted);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #ffffff;
+}
+.btn-danger:hover {
+  filter: brightness(1.1);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.btn-ghost:hover {
+  background: var(--accent-soft-bg);
+  color: var(--text-primary);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   Поля ввода
+   ============================================ */
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 15px;
+  transition: border-color 0.15s ease;
+}
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--text-muted);
+}
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* ============================================
+   Карточки
+   ============================================ */
+
+.card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  box-shadow: var(--shadow-card);
+}
+
+/* ============================================
+   Значки статусов (модерация и т.п.)
+   ============================================ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-pending {
+  background: rgba(125, 139, 255, 0.15);
+  color: var(--pending);
+}
+.badge-approved {
+  background: rgba(126, 224, 129, 0.15);
+  color: var(--success);
+}
+.badge-rejected {
+  background: rgba(255, 107, 107, 0.15);
+  color: var(--danger);
+}
+
+/* Плейсхолдер "Загрузка…" для непроверенных полей профиля */
+.moderation-placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ============================================
+   Утилиты
+   ============================================ */
+
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.flex {
+  display: flex;
+}
+.flex-col {
+  flex-direction: column;
+}
+.items-center {
+  align-items: center;
+}
+.justify-between {
+  justify-content: space-between;
+}
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+
+.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--bg-elevated);
+}
+.avatar-sm { width: 32px; height: 32px; }
+.avatar-md { width: 48px; height: 48px; }
+.avatar-lg { width: 88px; height: 88px; }
+
+/* ============================================
+   Нижняя навигация (мобильный формат)
+   ============================================ */
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-soft);
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  z-index: 20;
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 4px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.bottom-nav-item .icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.bottom-nav-item.active {
+  color: var(--accent);
+}
+
+.bottom-nav-item:hover {
+  color: var(--text-primary);
+}
+
+/* Отступ снизу у контента, чтобы нижнее меню его не перекрывало */
+.page-content {
+  padding-bottom: 76px;
+}
+
+/* ============================================
+   Лента и посты
+   ============================================ */
+
+.page-header {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 20px 16px 4px;
+  font-weight: 700;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.feed {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Форма создания поста */
+.composer {
+  margin-bottom: 20px;
+}
+.composer textarea {
+  margin-bottom: 10px;
+}
+.composer-photo-preview {
+  display: none;
+  position: relative;
+  margin-bottom: 10px;
+}
+.composer-photo-preview img {
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  display: block;
+}
+.composer-photo-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(20, 16, 31, 0.75);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.composer-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.composer-photo-btn {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  font-family: inherit;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+.composer-photo-btn:hover {
+  background: var(--accent-soft-bg);
+  color: var(--text-primary);
+}
+
+/* Карточка поста */
+.post-card {
+  margin-bottom: 14px;
+}
+.post-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.post-header .names {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.post-author-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.post-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.rejection-reason {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.post-text {
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.post-image {
+  width: 100%;
+  max-height: 480px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+  display: block;
+}
+.post-actions {
+  display: flex;
+  gap: 16px;
+  border-top: 1px solid var(--border-soft);
+  padding-top: 10px;
+}
+.post-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+.post-action:hover {
+  background: var(--accent-soft-bg);
+  color: var(--text-primary);
+}
+.post-action.liked {
+  color: var(--accent);
+}
+
+/* ============================================
+   Модерация
+   ============================================ */
+
+.moderation-card {
+  margin-bottom: 14px;
+}
+.moderation-card .post-meta-author {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+.moderation-card .post-meta-author b {
+  color: var(--text-primary);
+}
+.moderation-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+.moderation-actions .btn {
+  flex: 1;
+}
