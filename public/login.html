@@ -195,8 +195,8 @@
         return;
       }
 
-      // Успешный вход — пока просто уходим на index.html (лента появится на Этапе 5)
-      window.location.href = 'index.html';
+      // Успешный вход — уходим в SPA-приложение
+      window.location.href = 'app.html';
     } catch (err) {
       showError('Ошибка сети, попробуй ещё раз');
     } finally {

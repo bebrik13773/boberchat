@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>БоберЧат</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  #appContent {
+    min-height: calc(100vh - 76px);
+    animation: fadeIn 0.15s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div id="appContent">
+  <div class="empty-state">Загрузка…</div>
+</div>
+
+<nav class="bottom-nav">
+  <a href="#feed" class="bottom-nav-item" data-route="feed">
+    <span class="icon">🏠</span>
+    <span>Лента</span>
+  </a>
+  <a href="#chats" class="bottom-nav-item" data-route="chats">
+    <span class="icon">💬</span>
+    <span>Чат</span>
+  </a>
+  <a href="#profile" class="bottom-nav-item" data-route="profile">
+    <span class="icon">👤</span>
+    <span>Профиль</span>
+  </a>
+</nav>
+
+<script>
+(function () {
+  const appContent = document.getElementById('appContent');
+  const navItems = document.querySelectorAll('.bottom-nav-item');
+
+  const routes = {
+    feed: 'views/feed.html',
+    chats: 'views/chats.html',
+    profile: 'views/profile.html',
+  };
+
+  async function loadRoute(route) {
+    if (!routes[route]) route = 'feed';
+
+    // Подсветка активного пункта меню
+    navItems.forEach(item => {
+      item.classList.toggle('active', item.dataset.route === route);
+    });
+
+    appContent.style.opacity = '0';
+
+    try {
+      const res = await fetch(routes[route]);
+      if (!res.ok) throw new Error('view not found');
+      const html = await res.text();
+
+      appContent.innerHTML = html;
+
+      // Скрипты, вставленные через innerHTML, не выполняются сами по себе —
+      // пересоздаём их вручную, чтобы JS каждого фрагмента реально запускался
+      appContent.querySelectorAll('script').forEach(oldScript => {
+        const newScript = document.createElement('script');
+        newScript.textContent = oldScript.textContent;
+        oldScript.replaceWith(newScript);
+      });
+
+      appContent.style.opacity = '1';
+    } catch (err) {
+      appContent.innerHTML = '<div class="empty-state">Не удалось загрузить раздел</div>';
+    }
+  }
+
+  navItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      const route = item.dataset.route;
+      window.location.hash = route;
+    });
+  });
+
+  window.addEventListener('hashchange', () => {
+    const route = window.location.hash.replace('#', '') || 'feed';
+    loadRoute(route);
+  });
+
+  // Проверка авторизации перед первой загрузкой
+  fetch('api/me.php')
+    .then(res => {
+      if (!res.ok) throw new Error('not authorized');
+      const initialRoute = window.location.hash.replace('#', '') || 'feed';
+      loadRoute(initialRoute);
+    })
+    .catch(() => {
+      window.location.href = 'login.html';
+    });
+})();
+</script>
+
+</body>
+</html>

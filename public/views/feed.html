@@ -1,155 +1,3 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>БоберЧат — Лента</title>
-<link rel="stylesheet" href="assets/style.css">
-<style>
-  .page-header {
-    max-width: 560px;
-    margin: 0 auto;
-    padding: 20px 16px 4px;
-    font-weight: 700;
-    font-size: 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .feed {
-    max-width: 560px;
-    margin: 0 auto;
-    padding: 0 16px;
-  }
-
-  /* Форма создания поста */
-  .composer {
-    margin-bottom: 20px;
-  }
-  .composer textarea {
-    margin-bottom: 10px;
-  }
-  .composer-photo-preview {
-    display: none;
-    position: relative;
-    margin-bottom: 10px;
-  }
-  .composer-photo-preview img {
-    width: 100%;
-    max-height: 240px;
-    object-fit: cover;
-    border-radius: var(--radius-sm);
-    display: block;
-  }
-  .composer-photo-remove {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: rgba(20, 16, 31, 0.75);
-    color: #fff;
-    border: none;
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-    cursor: pointer;
-    font-size: 14px;
-  }
-  .composer-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .composer-photo-btn {
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 14px;
-    color: var(--text-secondary);
-    background: none;
-    border: none;
-    font-family: inherit;
-    padding: 6px 8px;
-    border-radius: 6px;
-  }
-  .composer-photo-btn:hover {
-    background: var(--accent-soft-bg);
-    color: var(--text-primary);
-  }
-
-  /* Карточка поста */
-  .post-card {
-    margin-bottom: 14px;
-  }
-  .post-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-  .post-header .names {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.25;
-  }
-  .post-author-name {
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--text-primary);
-  }
-  .post-meta {
-    font-size: 12px;
-    color: var(--text-muted);
-  }
-  .post-text {
-    color: var(--text-primary);
-    margin-bottom: 12px;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-  .post-image {
-    width: 100%;
-    border-radius: var(--radius-sm);
-    margin-bottom: 12px;
-    display: block;
-  }
-  .post-actions {
-    display: flex;
-    gap: 16px;
-    border-top: 1px solid var(--border-soft);
-    padding-top: 10px;
-  }
-  .post-action {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: var(--text-secondary);
-    cursor: pointer;
-    background: none;
-    border: none;
-    font-family: inherit;
-    padding: 4px 6px;
-    border-radius: 6px;
-  }
-  .post-action:hover {
-    background: var(--accent-soft-bg);
-    color: var(--text-primary);
-  }
-  .post-action.liked {
-    color: var(--accent);
-  }
-
-  .empty-state {
-    text-align: center;
-    color: var(--text-muted);
-    padding: 40px 20px;
-  }
-</style>
-</head>
-<body>
-
 <div class="page-header">🦫 БоберЧат</div>
 
 <div class="feed page-content">
@@ -176,22 +24,8 @@
 
 </div>
 
-<nav class="bottom-nav">
-  <a href="feed.html" class="bottom-nav-item active">
-    <span class="icon">🏠</span>
-    <span>Лента</span>
-  </a>
-  <a href="chats.html" class="bottom-nav-item">
-    <span class="icon">💬</span>
-    <span>Чат</span>
-  </a>
-  <a href="profile.html" class="bottom-nav-item">
-    <span class="icon">👤</span>
-    <span>Профиль</span>
-  </a>
-</nav>
-
 <script>
+(function () {
   const postsContainer = document.getElementById('postsContainer');
   const postText = document.getElementById('postText');
   const postSubmit = document.getElementById('postSubmit');
@@ -208,7 +42,6 @@
   photoInput.addEventListener('change', () => {
     const file = photoInput.files[0];
     if (!file) return;
-
     selectedPhotoFile = file;
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -256,7 +89,6 @@
     }
 
     const metaHtml = statusBadge || timeAgo(post.created_at);
-
     const likedClass = post.liked_by_me ? 'liked' : '';
 
     return `
@@ -287,7 +119,6 @@
         postsContainer.innerHTML = '<div class="empty-state">Пока пусто. Напиши первый пост!</div>';
         return;
       }
-
       postsContainer.innerHTML = data.posts.map(renderPost).join('');
     } catch (err) {
       postsContainer.innerHTML = '<div class="empty-state">Не удалось загрузить ленту</div>';
@@ -311,9 +142,8 @@
         alert(data.error || 'Не удалось опубликовать пост');
         return;
       }
-
       postText.value = '';
-      loadFeed(); // перерисовываем ленту, новый pending-пост появится у автора сразу
+      loadFeed();
     } catch (err) {
       alert('Ошибка сети');
     } finally {
@@ -322,7 +152,5 @@
   });
 
   loadFeed();
+})();
 </script>
-
-</body>
-</html>
