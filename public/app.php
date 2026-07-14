@@ -63,8 +63,23 @@ header('Pragma: no-cache');
     moderation: 'views/moderation.php',
   };
 
-  async function loadRoute(route) {
-    if (!routes[route]) route = 'feed';
+  async function loadRoute(rawRoute) {
+    let route = rawRoute;
+    let viewUrl = routes[route];
+    let chatId = null;
+
+    // Параметризованный маршрут: chat-42 -> views/chat.php?id=42
+    const chatMatch = rawRoute.match(/^chat-(\d+)$/);
+    if (chatMatch) {
+      chatId = chatMatch[1];
+      viewUrl = 'views/chat.php?id=' + chatId;
+      route = 'chats'; // подсвечиваем пункт "Чат" в меню
+    }
+
+    if (!viewUrl) {
+      route = 'feed';
+      viewUrl = routes.feed;
+    }
 
     // Подсветка активного пункта меню
     navItems.forEach(item => {
@@ -74,7 +89,7 @@ header('Pragma: no-cache');
     appContent.style.opacity = '0';
 
     try {
-      const res = await fetch(routes[route], { cache: 'no-store' });
+      const res = await fetch(viewUrl, { cache: 'no-store' });
       if (!res.ok) throw new Error('view not found');
       const html = await res.text();
 
