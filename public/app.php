@@ -90,9 +90,18 @@ header('Pragma: no-cache');
     appContent.style.opacity = '0';
 
     try {
-      const res = await fetch(viewUrl, { cache: 'no-store' });
-      if (!res.ok) throw new Error('view not found');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 сек — не даём зависнуть навечно
+
+      const res = await fetch(viewUrl, { cache: 'no-store', signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       const html = await res.text();
+
+      if (!html || html.trim() === '') {
+        throw new Error('Сервер вернул пустой ответ (возможно, сессия истекла)');
+      }
 
       appContent.innerHTML = html;
 
@@ -106,7 +115,10 @@ header('Pragma: no-cache');
 
       appContent.style.opacity = '1';
     } catch (err) {
-      appContent.innerHTML = '<div class="empty-state">Не удалось загрузить раздел: ' + escapeErr(err) + '</div>';
+      const isTimeout = err.name === 'AbortError';
+      appContent.innerHTML = '<div class="empty-state">Не удалось загрузить раздел'
+        + (isTimeout ? ' (сервер не ответил за 15 сек)' : ': ' + escapeErr(err))
+        + '<br><button class="btn btn-secondary" style="margin-top:10px;" onclick="window.location.reload()">Обновить страницу</button></div>';
     }
   }
 
@@ -120,7 +132,12 @@ header('Pragma: no-cache');
     item.addEventListener('click', (e) => {
       e.preventDefault();
       const route = item.dataset.route;
-      window.location.hash = route;
+      if (window.location.hash === '#' + route) {
+        // Хэш не меняется -> hashchange не сработает -> вызываем напрямую
+        loadRoute(route);
+      } else {
+        window.location.hash = route;
+      }
     });
   });
 
