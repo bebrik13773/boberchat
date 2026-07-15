@@ -106,8 +106,14 @@ header('Pragma: no-cache');
 
       appContent.style.opacity = '1';
     } catch (err) {
-      appContent.innerHTML = '<div class="empty-state">Не удалось загрузить раздел</div>';
+      appContent.innerHTML = '<div class="empty-state">Не удалось загрузить раздел: ' + escapeErr(err) + '</div>';
     }
+  }
+
+  function escapeErr(err) {
+    const div = document.createElement('div');
+    div.textContent = String(err && err.message || err);
+    return div.innerHTML;
   }
 
   navItems.forEach(item => {
