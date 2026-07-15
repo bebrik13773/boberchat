@@ -66,7 +66,7 @@ header('Pragma: no-cache');
       <a href="#chat-${chat.chat_id}" class="card chat-list-item" data-chat-id="${chat.chat_id}" style="display:flex; gap:12px; align-items:center; margin-bottom:10px; text-decoration:none; color:inherit;">
         ${renderAvatar(avatarPath, 'avatar-md')}
         <div style="flex:1; min-width:0;">
-          <div style="font-weight:600; color:var(--text-primary);">${name}</div>
+          <div style="font-weight:600; color:var(--text-primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${name}</div>
           <div style="font-size:13px; color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${preview}</div>
         </div>
         <div style="font-size:12px; color:var(--text-muted); white-space:nowrap;">${timeAgo(chat.last_message_at)}</div>
