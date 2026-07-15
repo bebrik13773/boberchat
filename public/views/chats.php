@@ -37,6 +37,13 @@ header('Pragma: no-cache');
     return div.innerHTML;
   }
 
+  function renderAvatar(avatarPath, sizeClass) {
+    if (avatarPath) {
+      return `<img class="avatar ${sizeClass}" src="${avatarPath}" alt="">`;
+    }
+    return `<div class="avatar ${sizeClass} avatar-placeholder">🦫</div>`;
+  }
+
   function timeAgo(isoString) {
     if (!isoString) return '';
     const date = new Date(isoString.replace(' ', 'T') + 'Z');
@@ -52,14 +59,14 @@ header('Pragma: no-cache');
       ? (chat.other_user.display_name || '@' + escapeHtml(chat.other_user.username))
       : (chat.title || 'Групповой чат');
 
-    const avatarSrc = chat.other_user && chat.other_user.avatar_path ? chat.other_user.avatar_path : '';
+    const avatarPath = chat.other_user && chat.other_user.avatar_path ? chat.other_user.avatar_path : '';
     const preview = chat.last_message ? escapeHtml(chat.last_message) : 'Нет сообщений';
 
     return `
       <a href="#chat-${chat.chat_id}" class="card chat-list-item" data-chat-id="${chat.chat_id}" style="display:flex; gap:12px; align-items:center; margin-bottom:10px; text-decoration:none; color:inherit;">
-        <img class="avatar avatar-md" src="${avatarSrc}" alt="">
+        ${renderAvatar(avatarPath, 'avatar-md')}
         <div style="flex:1; min-width:0;">
-          <div style="font-weight:600; color:var(--text-primary);">${name}</div>
+          <div style="font-weight:600; color:var(--text-primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${name}</div>
           <div style="font-size:13px; color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${preview}</div>
         </div>
         <div style="font-size:12px; color:var(--text-muted); white-space:nowrap;">${timeAgo(chat.last_message_at)}</div>

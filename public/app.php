@@ -13,7 +13,7 @@ header('Pragma: no-cache');
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>БоберЧат</title>
-<link rel="stylesheet" href="assets/style.css?v=8">
+<link rel="stylesheet" href="assets/style.css?v=9">
 <style>
   #appContent {
     min-height: calc(100vh - 76px);

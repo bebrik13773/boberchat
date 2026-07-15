@@ -73,6 +73,13 @@ header('Pragma: no-cache');
     return div.innerHTML;
   }
 
+  function renderAvatar(avatarPath, sizeClass) {
+    if (avatarPath) {
+      return `<img class="avatar ${sizeClass}" src="${avatarPath}" alt="">`;
+    }
+    return `<div class="avatar ${sizeClass} avatar-placeholder">🦫</div>`;
+  }
+
   function timeAgo(isoString) {
     // MySQL хранит created_at в UTC (время сервера), но без явной пометки
     // JS интерпретирует такую строку как локальное время браузера — добавляем "Z",
@@ -90,8 +97,6 @@ header('Pragma: no-cache');
     const nameHtml = authorName
       ? escapeHtml(authorName)
       : '<span class="moderation-placeholder">Загрузка…</span>';
-
-    const avatarSrc = post.author.avatar_path || '';
 
     let statusBadge = '';
     if (post.status === 'pending') {
@@ -114,10 +119,14 @@ header('Pragma: no-cache');
       ? `<img class="post-image" src="${post.image_path}" alt="">`
       : '';
 
+    const deleteBtnHtml = post.is_mine
+      ? `<button class="post-action delete-post-btn" data-post-id="${post.id}" title="Удалить">🗑️</button>`
+      : '';
+
     return `
       <div class="card post-card" data-post-id="${post.id}">
         <div class="post-header">
-          <img class="avatar avatar-md" src="${avatarSrc}" alt="">
+          ${renderAvatar(post.author.avatar_path, 'avatar-md')}
           <div class="names">
             <span class="post-author-name">${nameHtml}</span>
             <span class="post-meta">${metaHtml}</span>
@@ -128,6 +137,7 @@ header('Pragma: no-cache');
         <div class="post-actions">
           <button class="post-action like-btn ${likedClass}" data-post-id="${post.id}">❤ ${post.like_count}</button>
           <button class="post-action comment-toggle-btn" data-post-id="${post.id}">💬 <span class="comment-count">${post.comment_count}</span></button>
+          ${deleteBtnHtml}
         </div>
         <div class="comments-section" data-comments-for="${post.id}">
           <div class="comments-list">Загрузка комментариев…</div>
@@ -158,35 +168,69 @@ header('Pragma: no-cache');
 
   postsContainer.addEventListener('click', async (e) => {
     const likeBtn = e.target.closest('.like-btn');
-    if (!likeBtn) return;
+    const deleteBtn = e.target.closest('.delete-post-btn');
 
-    const postId = likeBtn.dataset.postId;
-    likeBtn.disabled = true;
+    if (likeBtn) {
+      const postId = likeBtn.dataset.postId;
+      likeBtn.disabled = true;
 
-    try {
-      const res = await fetch('api/toggle_like.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ post_id: postId }),
-      });
-      const data = await res.json();
+      try {
+        const res = await fetch('api/toggle_like.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ post_id: postId }),
+        });
+        const data = await res.json();
 
-      if (!res.ok) {
-        alert(data.error || 'Не удалось поставить лайк');
-        return;
+        if (!res.ok) {
+          alert(data.error || 'Не удалось поставить лайк');
+          return;
+        }
+
+        likeBtn.textContent = `❤ ${data.like_count}`;
+        likeBtn.classList.toggle('liked', data.liked);
+        likeBtn.classList.remove('liked-lvl-2', 'liked-lvl-3');
+        if (data.liked) {
+          if (data.like_count >= 10) likeBtn.classList.add('liked-lvl-3');
+          else if (data.like_count >= 3) likeBtn.classList.add('liked-lvl-2');
+        }
+      } catch (err) {
+        alert('Ошибка сети');
+      } finally {
+        likeBtn.disabled = false;
       }
+      return;
+    }
 
-      likeBtn.textContent = `❤ ${data.like_count}`;
-      likeBtn.classList.toggle('liked', data.liked);
-      likeBtn.classList.remove('liked-lvl-2', 'liked-lvl-3');
-      if (data.liked) {
-        if (data.like_count >= 10) likeBtn.classList.add('liked-lvl-3');
-        else if (data.like_count >= 3) likeBtn.classList.add('liked-lvl-2');
+    if (deleteBtn) {
+      if (!confirm('Удалить этот пост?')) return;
+
+      const postId = deleteBtn.dataset.postId;
+      deleteBtn.disabled = true;
+
+      try {
+        const res = await fetch('api/delete_post.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ post_id: postId }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          alert(data.error || 'Не удалось удалить пост');
+          deleteBtn.disabled = false;
+          return;
+        }
+
+        const card = postsContainer.querySelector(`.post-card[data-post-id="${postId}"]`);
+        if (card) card.remove();
+        if (!postsContainer.querySelector('.post-card')) {
+          postsContainer.innerHTML = '<div class="empty-state">Пока пусто. Напиши первый пост!</div>';
+        }
+      } catch (err) {
+        alert('Ошибка сети');
+        deleteBtn.disabled = false;
       }
-    } catch (err) {
-      alert('Ошибка сети');
-    } finally {
-      likeBtn.disabled = false;
     }
   });
 

@@ -31,6 +31,13 @@ header('Pragma: no-cache');
       : '<span class="moderation-placeholder">Загрузка…</span>';
   }
 
+  function renderAvatar(avatarPath, sizeClass) {
+    if (avatarPath) {
+      return `<img class="avatar ${sizeClass}" src="${avatarPath}" alt="" style="margin: 0 auto 12px;">`;
+    }
+    return `<div class="avatar ${sizeClass} avatar-placeholder" style="margin: 0 auto 12px;">🦫</div>`;
+  }
+
   function renderPendingNote(profile) {
     if (!profile.pending) return '';
 
@@ -53,7 +60,6 @@ header('Pragma: no-cache');
   }
 
   function render(profile) {
-    const avatarSrc = profile.avatar_path || '';
     const roleLabel = profile.role === 'admin'
       ? '<span class="badge badge-approved">Admin</span>'
       : profile.role === 'moderator'
@@ -63,7 +69,7 @@ header('Pragma: no-cache');
     container.innerHTML = `
       ${renderPendingNote(profile)}
       <div class="card" style="text-align:center; margin-bottom:14px;">
-        <img class="avatar avatar-lg" src="${avatarSrc}" alt="" style="margin: 0 auto 12px;">
+        ${renderAvatar(profile.avatar_path, 'avatar-lg')}
         <h2 style="margin-bottom:4px;">${fieldOrPlaceholder(profile.display_name)}</h2>
         <p style="margin-bottom:8px; color: var(--text-muted);">
           @${profile.username ? escapeHtml(profile.username) : '...'}
