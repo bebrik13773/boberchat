@@ -14,7 +14,7 @@ header('Pragma: no-cache');
     <div class="empty-state">Загрузка профиля…</div>
   </div>
   <p style="text-align:center; color:var(--text-muted); font-size:11px; margin-top:20px;">
-    build 23cbc3d · <?php echo date('Y-m-d H:i'); ?> (сервер)
+    build 4273bda · <?php echo date('Y-m-d H:i'); ?> (сервер)
   </p>
 </div>
 
